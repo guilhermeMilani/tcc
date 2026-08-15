@@ -1,0 +1,21 @@
+spring.application.name=tcc
+
+# PostgreSQL
+spring.datasource.url=jdbc:postgresql://localhost:5432/monitoramento_idosos
+spring.datasource.username=
+spring.datasource.password=
+spring.jpa.hibernate.ddl-auto=none
+spring.jpa.show-sql=false
+
+# JWT
+jwt.secret=
+jwt.expiration=86400000
+
+# InfluxDB
+influx.url=http://localhost:8086
+influx.token=
+influx.bucket=sinais_vitais
+influx.org=
+
+# Firebase
+firebase.credentials.path=src/main/resources/firebase-credentials.json
