@@ -29,10 +29,9 @@ public class SmartWatchSimuladorService {
     private final Map<Long, EstadoSimulacao> estadosPorIdoso = new ConcurrentHashMap<>();
     private final Random random = new Random();
 
-    // Localização base de cada idoso (simula ponto de partida)
     private final Map<Long, double[]> localizacaoBase = new ConcurrentHashMap<>();
 
-    @Scheduled(fixedRate = 10000) // a cada 10 segundos
+    @Scheduled(fixedRate = 60000)
     public void simularSinaisVitais() {
         List<Idoso> idosos = idosoRepository.findAll();
 
@@ -48,7 +47,7 @@ public class SmartWatchSimuladorService {
         }
     }
 
-    @Scheduled(fixedRate = 15000) // a cada 15 segundos
+    @Scheduled(fixedRate = 15000)
     public void simularLocalizacao() {
         List<Idoso> idosos = idosoRepository.findAll();
 
@@ -82,7 +81,6 @@ public class SmartWatchSimuladorService {
     private void gerarSinalVital(Idoso idoso, EstadoSimulacao estado) {
         FaixaValores faixa = config.getFaixa(estado.getEstado());
 
-        // Variação suave: valor anterior ± delta pequeno, mantido dentro da faixa
         double novaFreq = variacaoSuave(estado.getFrequenciaAtual(), faixa.getFreqMin(), faixa.getFreqMax(), 3.0);
         double novaSpO2 = variacaoSuave(estado.getSpO2Atual(), faixa.getSpO2Min(), faixa.getSpO2Max(), 0.5);
         double novaTemp = variacaoSuave(estado.getTemperaturaAtual(), faixa.getTempMin(), faixa.getTempMax(), 0.1);
@@ -105,7 +103,6 @@ public class SmartWatchSimuladorService {
     }
 
     private void gerarLocalizacao(Idoso idoso) {
-        // Ponto base: São Paulo como padrão se ainda não tem
         double[] base = localizacaoBase.computeIfAbsent(
                 idoso.getId(), id -> new double[]{-23.5505, -46.6333}
         );
@@ -113,7 +110,6 @@ public class SmartWatchSimuladorService {
         EstadoSimulacao estado = estadosPorIdoso.get(idoso.getId());
         EstadoAtividade atividade = estado != null ? estado.getEstado() : EstadoAtividade.REPOUSO;
 
-        // Variação de deslocamento depende do estado
         double delta = switch (atividade) {
             case DORMINDO, REPOUSO -> 0.0001;  // quase parado
             case CAMINHANDO        -> 0.0005;  // movimento leve

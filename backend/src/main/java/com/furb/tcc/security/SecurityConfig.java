@@ -30,8 +30,8 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/sinais-vitais/**").hasRole("IDOSO")
-                        .requestMatchers("/localizacao/**").hasRole("IDOSO")
+                        .requestMatchers("/sinais-vitais/**").hasAnyRole("IDOSO", "CUIDADOR")
+                        .requestMatchers("/localizacao/**").hasAnyRole("IDOSO", "CUIDADOR")
                         .requestMatchers("/medicacoes/*/adesao").hasRole("IDOSO")
                         .requestMatchers("/vinculos/idoso/**").hasAnyRole("IDOSO", "CUIDADOR")
                         .requestMatchers("/vinculos/cuidador/**").hasRole("CUIDADOR")

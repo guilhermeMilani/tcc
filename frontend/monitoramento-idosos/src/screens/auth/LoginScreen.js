@@ -78,6 +78,16 @@ export default function LoginScreen({ navigation }) {
           <Text style={styles.cadastroLink}>Sou cuidador</Text>
         </TouchableOpacity>
       </View>
+       <TouchableOpacity
+          style={styles.esqueciSenha}
+          onPress={() => Alert.alert(
+            'Esqueci minha senha',
+            'Entre em contato com o administrador do sistema para redefinir sua senha.',
+            [{ text: 'OK' }]
+          )}
+        >
+          <Text style={styles.esqueciSenhaTexto}>Esqueci minha senha</Text>
+        </TouchableOpacity>
     </KeyboardAvoidingView>
   );
 }
@@ -141,4 +151,13 @@ const styles = StyleSheet.create({
     color: theme.primaria,
     fontWeight: 'bold',
   },
+  esqueciSenha: {
+  marginTop: theme.espacoMedio,
+  alignItems: 'center',
+},
+esqueciSenhaTexto: {
+  fontSize: theme.fontePequena,
+  color: theme.textoSecundario,
+  textDecorationLine: 'underline',
+},
 });

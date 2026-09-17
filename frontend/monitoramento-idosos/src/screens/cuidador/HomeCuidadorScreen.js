@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView,
   ActivityIndicator, TouchableOpacity, Alert
@@ -14,9 +16,11 @@ export default function HomeCuidadorScreen() {
   const [alertasNaoLidos, setAlertasNaoLidos] = useState(0);
   const [carregando, setCarregando] = useState(true);
 
-  useEffect(() => {
-    carregarDados();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      carregarDados();
+    }, [])
+  );
 
   async function carregarDados() {
     try {
