@@ -258,7 +258,7 @@ const ultimo = sinais.length > 0
                 <View style={styles.valorItem}>
                   <Ionicons name="water" size={22} color={corSpO2(ultimo.spO2)} />
                   <Text style={[styles.valorTexto, { color: corSpO2(ultimo.spO2) }]}>
-                    {ultimo.spO2?.toFixed(1)}%
+                    {ultimo.spO2?.toFixed(0)}%
                   </Text>
                 </View>
                 <View style={styles.valorItem}>

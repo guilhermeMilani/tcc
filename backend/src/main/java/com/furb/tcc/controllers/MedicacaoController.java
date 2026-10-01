@@ -1,6 +1,7 @@
 package com.furb.tcc.controllers;
 
 import com.furb.tcc.dtos.requests.MedicacaoRequest;
+import com.furb.tcc.dtos.responses.MedicacaoHojeResponse;
 import com.furb.tcc.entities.Medicacao;
 import com.furb.tcc.entities.RegistroMedicacao;
 import com.furb.tcc.entities.Usuario;
@@ -56,5 +57,10 @@ public class MedicacaoController {
             @RequestParam LocalDateTime inicio,
             @RequestParam LocalDateTime fim) {
         return ResponseEntity.ok(medicacaoService.buscarHistoricoAdesao(idosoId, inicio, fim));
+    }
+
+    @GetMapping("/idoso/{idosoId}/hoje")
+    public ResponseEntity<List<MedicacaoHojeResponse>> buscarMedicacoesHoje(@PathVariable Long idosoId) {
+        return ResponseEntity.ok(medicacaoService.buscarMedicacoesHoje(idosoId));
     }
 }

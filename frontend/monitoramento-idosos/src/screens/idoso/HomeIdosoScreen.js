@@ -68,13 +68,13 @@ export default function HomeIdosoScreen() {
             icone="water"
             cor="#1565C0"
             titulo="SpO2"
-            valor={`${sinais.spO2}%`}
+            valor={`${sinais.spO2?.toFixed(0)}%`}
           />
           <CardSinal
             icone="thermometer"
             cor="#F57C00"
             titulo="Temperatura"
-            valor={`${sinais.temperatura}°C`}
+            valor={`${sinais.temperatura?.toFixed(1)}°C`}
           />
         </View>
       ) : (
@@ -87,7 +87,7 @@ export default function HomeIdosoScreen() {
       <View style={styles.infoBox}>
         <Ionicons name="information-circle-outline" size={24} color={theme.primaria} />
         <Text style={styles.infoTexto}>
-          Os dados são atualizados automaticamente a cada 10 segundos.
+          Os dados são atualizados automaticamente a cada 1 minuto.
         </Text>
       </View>
     </ScrollView>

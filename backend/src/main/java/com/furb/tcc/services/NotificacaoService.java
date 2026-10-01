@@ -1,35 +1,47 @@
 package com.furb.tcc.services;
 
 import com.furb.tcc.entities.TipoAlerta;
-import com.google.firebase.messaging.FirebaseMessaging;
-import com.google.firebase.messaging.FirebaseMessagingException;
-import com.google.firebase.messaging.Message;
-import com.google.firebase.messaging.Notification;
-import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
-@RequiredArgsConstructor
 public class NotificacaoService {
 
-    private final FirebaseMessaging firebaseMessaging;
+    private final RestTemplate restTemplate = new RestTemplate();
 
     public void enviar(String token, TipoAlerta tipo, String descricao) {
         if (token == null || token.isBlank()) return;
 
-        Message message = Message.builder()
-                .setToken(token)
-                .setNotification(Notification.builder()
-                        .setTitle(formatarTitulo(tipo))
-                        .setBody(descricao)
-                        .build())
-                .putData("tipo", tipo.name())
-                .build();
+        Map<String, Object> body = new HashMap<>();
+        body.put("to", token);
+        body.put("title", formatarTitulo(tipo));
+        body.put("body", descricao);
+        body.put("sound", "default");
+        body.put("priority", "high");
+        body.put("data", Map.of("tipo", tipo.name()));
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("Accept", "application/json");
+
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
 
         try {
-            firebaseMessaging.send(message);
-        } catch (FirebaseMessagingException e) {
-            throw new RuntimeException("Erro ao enviar notificação: " + e.getMessage());
+            restTemplate.postForEntity(
+                    "https://exp.host/--/api/v2/push/send",
+                    request,
+                    String.class
+            );
+        } catch (Exception e) {
+            System.err.println("Erro ao enviar notificação: " + e.getMessage());
         }
     }
 

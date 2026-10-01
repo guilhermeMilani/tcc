@@ -1,12 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, ActivityIndicator,
   TouchableOpacity, Alert, TextInput, Modal
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import { theme } from '../../constants/theme';
 import { useAuth } from '../../context/AuthContext';
-import { listarIdososDoCuidador, buscarMedicacoes, cadastrarMedicacao } from '../../api/api';
+import {
+  listarIdososDoCuidador, buscarMedicacoesHojeIdoso, cadastrarMedicacao
+} from '../../api/api';
 
 export default function MedicacoesCuidadorScreen() {
   const { usuario } = useAuth();
@@ -17,9 +20,11 @@ export default function MedicacoesCuidadorScreen() {
   const [modalVisivel, setModalVisivel] = useState(false);
   const [form, setForm] = useState({ nome: '', dosagem: '', horarios: '' });
 
-  useEffect(() => {
-    carregarIdosos();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      carregarIdosos();
+    }, [])
+  );
 
   useEffect(() => {
     if (idosoSelecionado) carregarMedicacoes();
@@ -37,36 +42,33 @@ export default function MedicacoesCuidadorScreen() {
     }
   }
 
-  async function carregarMedicacoes() {
-    setCarregando(true);
-    try {
-      const resposta = await buscarMedicacoes(idosoSelecionado.id);
-      setMedicacoes(resposta.data);
-    } catch (e) {
-      Alert.alert('Erro', 'Não foi possível carregar as medicações.');
-    } finally {
-      setCarregando(false);
-    }
+async function carregarMedicacoes() {
+  setCarregando(true);
+  try {
+    const resposta = await buscarMedicacoesHojeIdoso(idosoSelecionado.id);
+    setMedicacoes(resposta.data);
+  } catch (e) {
+    Alert.alert('Erro', 'Não foi possível carregar as medicações.');
+  } finally {
+    setCarregando(false);
   }
+}
 
   async function handleCadastrar() {
     if (!form.nome) {
       Alert.alert('Atenção', 'O nome da medicação é obrigatório.');
       return;
     }
-
     try {
       const horarios = form.horarios
         ? form.horarios.split(',').map(h => h.trim())
         : [];
-
       await cadastrarMedicacao({
         idosoId: idosoSelecionado.id,
         nome: form.nome,
         dosagem: form.dosagem,
         horarios,
       });
-
       setModalVisivel(false);
       setForm({ nome: '', dosagem: '', horarios: '' });
       carregarMedicacoes();
@@ -74,6 +76,54 @@ export default function MedicacoesCuidadorScreen() {
     } catch (e) {
       Alert.alert('Erro', 'Não foi possível cadastrar a medicação.');
     }
+  }
+
+  function formatarHorario(horario) {
+    return horario?.substring(0, 5);
+  }
+
+  const tomadas = medicacoes.filter(m => m.tomou === true);
+  const naoTomadas = medicacoes.filter(m => m.tomou === false || (m.tomou === null && m.status === 'ANTERIOR'));
+  const pendentes = medicacoes.filter(m => m.tomou === null && m.status !== 'ANTERIOR');
+
+  function CardMedicacao({ med }) {
+    const icone = med.tomou === true ? 'checkmark-circle' : med.tomou === false ? 'close-circle' : 'time-outline';
+    const cor = med.tomou === true ? theme.sucesso : med.tomou === false ? theme.perigo : theme.primaria;
+    const statusTexto = med.tomou === true ? 'Tomada' : med.tomou === false ? 'Não tomada' : med.status === 'AGORA' ? 'Pendente agora' : med.status === 'PROXIMA' ? 'Próxima' : 'Sem registro';
+
+    return (
+      <View style={styles.card}>
+        <View style={styles.cardTopo}>
+          <View style={styles.cardInfo}>
+            <Text style={styles.nomeMed}>{med.nome}</Text>
+            <Text style={styles.dosagem}>{med.dosagem}</Text>
+          </View>
+          <View style={styles.horarioBadge}>
+            <Ionicons name="time-outline" size={14} color={theme.textoSecundario} />
+            <Text style={styles.horarioTexto}>{formatarHorario(med.horario)}</Text>
+          </View>
+        </View>
+        <View style={[styles.statusBadge, { backgroundColor: cor + '20' }]}>
+          <Ionicons name={icone} size={16} color={cor} />
+          <Text style={[styles.statusTexto, { color: cor }]}>{statusTexto}</Text>
+        </View>
+      </View>
+    );
+  }
+
+  function Secao({ titulo, icone, cor, medicacoes }) {
+    if (medicacoes.length === 0) return null;
+    return (
+      <View style={styles.secao}>
+        <View style={styles.secaoTitulo}>
+          <Ionicons name={icone} size={18} color={cor} />
+          <Text style={[styles.secaoTexto, { color: cor }]}>{titulo} ({medicacoes.length})</Text>
+        </View>
+        {medicacoes.map((med, i) => (
+          <CardMedicacao key={`${med.id}-${med.horario}-${i}`} med={med} />
+        ))}
+      </View>
+    );
   }
 
   return (
@@ -88,6 +138,10 @@ export default function MedicacoesCuidadorScreen() {
             <Ionicons name="add" size={28} color={theme.branco} />
           </TouchableOpacity>
         </View>
+
+        <Text style={styles.subtitulo}>
+          {new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
+        </Text>
 
         {idosos.length > 1 && (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.seletor}>
@@ -113,18 +167,11 @@ export default function MedicacoesCuidadorScreen() {
             <Text style={styles.semDadosTexto}>Nenhuma medicação cadastrada.</Text>
           </View>
         ) : (
-          medicacoes.map((med) => (
-            <View key={med.id} style={styles.card}>
-              <Ionicons name="medkit" size={28} color={theme.primaria} />
-              <View style={styles.cardInfo}>
-                <Text style={styles.cardNome}>{med.nome}</Text>
-                <Text style={styles.cardDosagem}>{med.dosagem}</Text>
-                <Text style={styles.cardHorarios}>
-                  {med.horarios?.join('  ·  ') || 'Sem horário definido'}
-                </Text>
-              </View>
-            </View>
-          ))
+          <>
+            <Secao titulo="Tomadas" icone="checkmark-circle" cor={theme.sucesso} medicacoes={tomadas} />
+            <Secao titulo="Não tomadas" icone="close-circle" cor={theme.perigo} medicacoes={naoTomadas} />
+            <Secao titulo="Pendentes" icone="time" cor={theme.primaria} medicacoes={pendentes} />
+          </>
         )}
       </ScrollView>
 
@@ -132,7 +179,6 @@ export default function MedicacoesCuidadorScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modal}>
             <Text style={styles.modalTitulo}>Nova Medicação</Text>
-
             <TextInput
               style={styles.input}
               placeholder="Nome da medicação"
@@ -154,11 +200,9 @@ export default function MedicacoesCuidadorScreen() {
               value={form.horarios}
               onChangeText={(v) => setForm(prev => ({ ...prev, horarios: v }))}
             />
-
             <TouchableOpacity style={styles.botaoSalvar} onPress={handleCadastrar}>
               <Text style={styles.botaoSalvarTexto}>Salvar</Text>
             </TouchableOpacity>
-
             <TouchableOpacity style={styles.botaoCancelar} onPress={() => setModalVisivel(false)}>
               <Text style={styles.botaoCancelarTexto}>Cancelar</Text>
             </TouchableOpacity>
@@ -172,8 +216,9 @@ export default function MedicacoesCuidadorScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: theme.fundo },
   content: { padding: theme.espacoGrande, paddingTop: 60 },
-  cabecalho: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: theme.espacoGrande },
+  cabecalho: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
   titulo: { fontSize: theme.fonteTitulo, fontWeight: 'bold', color: theme.texto },
+  subtitulo: { fontSize: theme.fontePequena, color: theme.textoSecundario, marginBottom: theme.espacoGrande, textTransform: 'capitalize' },
   botaoAdicionar: {
     backgroundColor: theme.primaria, width: 48, height: 48,
     borderRadius: 24, justifyContent: 'center', alignItems: 'center',
@@ -183,17 +228,30 @@ const styles = StyleSheet.create({
   chipAtivo: { backgroundColor: theme.primaria },
   chipTexto: { fontSize: theme.fontePequena, color: theme.primaria },
   chipTextoAtivo: { color: theme.branco },
+  secao: { marginBottom: theme.espacoGrande },
+  secaoTitulo: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: theme.espacoMedio },
+  secaoTexto: { fontSize: theme.fonteMédia, fontWeight: 'bold' },
   card: {
     backgroundColor: theme.branco, borderRadius: theme.borderRadius,
     padding: theme.espacoMedio, marginBottom: theme.espacoMedio,
-    flexDirection: 'row', alignItems: 'center', gap: theme.espacoMedio,
     elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1, shadowRadius: 3,
   },
+  cardTopo: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 },
   cardInfo: { flex: 1 },
-  cardNome: { fontSize: theme.fonteMédia, fontWeight: 'bold', color: theme.texto },
-  cardDosagem: { fontSize: theme.fontePequena, color: theme.textoSecundario },
-  cardHorarios: { fontSize: theme.fontePequena, color: theme.primaria, marginTop: 2 },
+  nomeMed: { fontSize: theme.fonteMédia, fontWeight: 'bold', color: theme.texto },
+  dosagem: { fontSize: theme.fontePequena, color: theme.textoSecundario, marginTop: 2 },
+  horarioBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    backgroundColor: theme.fundo, borderRadius: 8,
+    paddingHorizontal: 8, paddingVertical: 4,
+  },
+  horarioTexto: { fontSize: theme.fontePequena, color: theme.textoSecundario, fontWeight: 'bold' },
+  statusBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6,
+  },
+  statusTexto: { fontSize: theme.fontePequena, fontWeight: '500' },
   semDados: { alignItems: 'center', paddingVertical: 60, gap: theme.espacoMedio },
   semDadosTexto: { fontSize: theme.fonteMédia, color: theme.textoSecundario, textAlign: 'center' },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },

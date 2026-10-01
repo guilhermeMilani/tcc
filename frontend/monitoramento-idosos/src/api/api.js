@@ -2,18 +2,27 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const api = axios.create({
-  baseURL: 'http://192.168.0.102:8080',
-  timeout: 10000,
+  baseURL: 'http://192.168.0.188:8080',
+  timeout: 30000,
 });
 
 // Interceptor — injeta o token JWT em toda requisição automaticamente
 api.interceptors.request.use(async (config) => {
+  console.log('Requisição:', config.method?.toUpperCase(), config.url);
   const token = await AsyncStorage.getItem('token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    console.log('Erro na requisição:', error.message, error.code);
+    return Promise.reject(error);
+  }
+);
 
 // Auth
 export const login = (email, senha) =>
@@ -68,5 +77,14 @@ export const listarIdososDoCuidador = (cuidadorId) =>
 
 export const listarCuidadoresDoIdoso = (idosoId) =>
   api.get(`/vinculos/idoso/${idosoId}/cuidadores`);
+
+export const buscarMedicacoesHoje = (idosoId) =>
+  api.get(`/medicacoes/idoso/${idosoId}/hoje`);
+
+export const buscarMedicacoesHojeIdoso = (idosoId) =>
+  api.get(`/medicacoes/idoso/${idosoId}/hoje`);
+
+export const atualizarTokenNotificacao = (cuidadorId, token) =>
+  api.put(`/cuidadores/${cuidadorId}/token`, { token });
 
 export default api;

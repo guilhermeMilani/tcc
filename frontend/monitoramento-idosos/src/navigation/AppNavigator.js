@@ -1,9 +1,10 @@
-import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import React, { useEffect, useRef } from 'react';
+import { NavigationContainer, createNavigationContainerRef } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { ActivityIndicator, View } from 'react-native';
 
 import { useAuth } from '../context/AuthContext';
+import { configurarListeners } from '../services/notificacaoService';
 import LoginScreen from '../screens/auth/LoginScreen';
 import CadastroIdosoScreen from '../screens/auth/CadastroIdosoScreen';
 import CadastroCuidadorScreen from '../screens/auth/CadastroCuidadorScreen';
@@ -11,9 +12,17 @@ import IdosoTabs from './IdosoTabs';
 import CuidadorTabs from './CuidadorTabs';
 
 const Stack = createStackNavigator();
+export const navigationRef = createNavigationContainerRef();
 
 export default function AppNavigator() {
   const { usuario, carregando } = useAuth();
+
+  useEffect(() => {
+    if (usuario?.tipo === 'CUIDADOR') {
+      const remover = configurarListeners(navigationRef);
+      return remover;
+    }
+  }, [usuario]);
 
   if (carregando) {
     return (
@@ -24,7 +33,7 @@ export default function AppNavigator() {
   }
 
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef}>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {!usuario ? (
           <>

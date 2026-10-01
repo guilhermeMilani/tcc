@@ -3,6 +3,7 @@ import {
   View, Text, TextInput, TouchableOpacity,
   StyleSheet, ActivityIndicator, Alert, KeyboardAvoidingView, Platform
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../../constants/theme';
 import { useAuth } from '../../context/AuthContext';
 import { login } from '../../api/api';
@@ -11,24 +12,25 @@ export default function LoginScreen({ navigation }) {
   const { salvarLogin } = useAuth();
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
+  const [senhaVisivel, setSenhaVisivel] = useState(false);
   const [carregando, setCarregando] = useState(false);
 
-  async function handleLogin() {
-    if (!email || !senha) {
-      Alert.alert('Atenção', 'Preencha o e-mail e a senha.');
-      return;
-    }
-
-    setCarregando(true);
-    try {
-      const resposta = await login(email, senha);
-      await salvarLogin(resposta.data.token);
-    } catch (e) {
-      Alert.alert('Erro', 'E-mail ou senha incorretos.');
-    } finally {
-      setCarregando(false);
-    }
+async function handleLogin() {
+  if (!email || !senha) {
+    Alert.alert('Atenção', 'Preencha o e-mail e a senha.');
+    return;
   }
+
+  setCarregando(true);
+  try {
+    const resposta = await login(email, senha);
+    await salvarLogin(resposta.data.token);
+  } catch (e) {
+    Alert.alert('Erro', `${e.message} - ${e.code}`);
+  } finally {
+    setCarregando(false);
+  }
+}
 
   return (
     <KeyboardAvoidingView
@@ -48,14 +50,23 @@ export default function LoginScreen({ navigation }) {
         onChangeText={setEmail}
       />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Senha"
-        placeholderTextColor={theme.textoSecundario}
-        secureTextEntry
-        value={senha}
-        onChangeText={setSenha}
-      />
+      <View style={styles.inputSenha}>
+        <TextInput
+          style={styles.inputSenhaTexto}
+          placeholder="Senha"
+          placeholderTextColor={theme.textoSecundario}
+          secureTextEntry={!senhaVisivel}
+          value={senha}
+          onChangeText={setSenha}
+        />
+        <TouchableOpacity onPress={() => setSenhaVisivel(!senhaVisivel)}>
+          <Ionicons
+            name={senhaVisivel ? 'eye-off-outline' : 'eye-outline'}
+            size={24}
+            color={theme.textoSecundario}
+          />
+        </TouchableOpacity>
+      </View>
 
       <TouchableOpacity
         style={styles.botao}
@@ -78,16 +89,17 @@ export default function LoginScreen({ navigation }) {
           <Text style={styles.cadastroLink}>Sou cuidador</Text>
         </TouchableOpacity>
       </View>
-       <TouchableOpacity
-          style={styles.esqueciSenha}
-          onPress={() => Alert.alert(
-            'Esqueci minha senha',
-            'Entre em contato com o administrador do sistema para redefinir sua senha.',
-            [{ text: 'OK' }]
-          )}
-        >
-          <Text style={styles.esqueciSenhaTexto}>Esqueci minha senha</Text>
-        </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.esqueciSenha}
+        onPress={() => Alert.alert(
+          'Esqueci minha senha',
+          'Entre em contato com o administrador do sistema para redefinir sua senha.',
+          [{ text: 'OK' }]
+        )}
+      >
+        <Text style={styles.esqueciSenhaTexto}>Esqueci minha senha</Text>
+      </TouchableOpacity>
     </KeyboardAvoidingView>
   );
 }
@@ -123,6 +135,22 @@ const styles = StyleSheet.create({
     borderColor: '#DDD',
     height: theme.alturaBotao,
   },
+  inputSenha: {
+    backgroundColor: theme.branco,
+    borderRadius: theme.borderRadius,
+    paddingHorizontal: theme.espacoMedio,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: theme.espacoMedio,
+    borderWidth: 1,
+    borderColor: '#DDD',
+    height: theme.alturaBotao,
+  },
+  inputSenhaTexto: {
+    flex: 1,
+    fontSize: theme.fonteMédia,
+    color: theme.texto,
+  },
   botao: {
     backgroundColor: theme.primaria,
     borderRadius: theme.borderRadius,
@@ -152,12 +180,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   esqueciSenha: {
-  marginTop: theme.espacoMedio,
-  alignItems: 'center',
-},
-esqueciSenhaTexto: {
-  fontSize: theme.fontePequena,
-  color: theme.textoSecundario,
-  textDecorationLine: 'underline',
-},
+    marginTop: theme.espacoPequeno,
+    alignItems: 'center',
+  },
+  esqueciSenhaTexto: {
+    fontSize: theme.fontePequena,
+    color: theme.textoSecundario,
+    textDecorationLine: 'underline',
+  },
 });

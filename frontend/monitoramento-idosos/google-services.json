@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "973151284753",
+    "project_id": "tcc-furb-5fd44",
+    "storage_bucket": "tcc-furb-5fd44.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:973151284753:android:5778efdc64150f45e34bb0",
+        "android_client_info": {
+          "package_name": "com.gpmilani.monitoramentoidosos"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDufJiUCkfTkLIEtIJQKy8vsSP8jnDp9ao"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
