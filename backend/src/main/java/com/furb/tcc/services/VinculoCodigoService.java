@@ -8,12 +8,13 @@ import com.furb.tcc.repositories.CuidadorRepository;
 import com.furb.tcc.repositories.IdosoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
+import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.Random;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class VinculoCodigoService {
 
     private final CodigoVinculoRepository codigoRepository;
