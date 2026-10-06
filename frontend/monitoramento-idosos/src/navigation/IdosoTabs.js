@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import HomeIdosoScreen from '../screens/idoso/HomeIdosoScreen';
 import MedicacoesIdosoScreen from '../screens/idoso/MedicacoesIdosoScreen';
 import PanicoScreen from '../screens/idoso/PanicoScreen';
+import VinculoIdosoScreen from '../screens/idoso/VinculoIdosoScreen';
 import { theme } from '../constants/theme';
 
 const Tab = createBottomTabNavigator();
@@ -18,6 +19,7 @@ export default function IdosoTabs() {
             Início: 'home',
             Medicações: 'medkit',
             Emergência: 'alert-circle',
+            Vincular: 'person-add',
           };
           return <Ionicons name={icones[route.name]} size={size} color={color} />;
         },
@@ -31,6 +33,7 @@ export default function IdosoTabs() {
       <Tab.Screen name="Início" component={HomeIdosoScreen} />
       <Tab.Screen name="Medicações" component={MedicacoesIdosoScreen} />
       <Tab.Screen name="Emergência" component={PanicoScreen} />
+      <Tab.Screen name="Vincular"  component={VinculoIdosoScreen}/>
     </Tab.Navigator>
   );
 }

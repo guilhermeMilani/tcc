@@ -7,11 +7,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../../constants/theme';
 import { useAuth } from '../../context/AuthContext';
 import { buscarHistoricoSinaisVitais } from '../../api/api';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function HomeIdosoScreen() {
   const { usuario, logout } = useAuth();
   const [sinais, setSinais] = useState(null);
   const [carregando, setCarregando] = useState(true);
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     carregarSinais();
@@ -41,7 +43,7 @@ export default function HomeIdosoScreen() {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+     <ScrollView style={styles.container} contentContainerStyle={[styles.content, { paddingTop: insets.top + 20 }]}>
       <View style={styles.cabecalho}>
         <View>
           <Text style={styles.olá}>Olá,</Text>
@@ -111,7 +113,6 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: theme.espacoGrande,
-    paddingTop: 60,
   },
   cabecalho: {
     flexDirection: 'row',

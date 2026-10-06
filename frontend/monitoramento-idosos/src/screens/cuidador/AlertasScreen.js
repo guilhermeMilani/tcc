@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../../constants/theme';
 import { useAuth } from '../../context/AuthContext';
 import { listarIdososDoCuidador, buscarAlertas, marcarAlertaComoLido } from '../../api/api';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const ICONES = {
   FREQUENCIA_ALTA: { icone: 'heart', cor: theme.perigo },
@@ -20,6 +21,7 @@ export default function AlertasScreen() {
   const { usuario } = useAuth();
   const [alertas, setAlertas] = useState([]);
   const [carregando, setCarregando] = useState(true);
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     carregarAlertas();
@@ -54,7 +56,8 @@ export default function AlertasScreen() {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView style={styles.container} contentContainerStyle={[styles.content, { paddingTop: insets.top + 20 }]}>
+      {/* conteúdo */}
       <Text style={styles.titulo}>Alertas</Text>
 
       {carregando ? (
@@ -97,7 +100,7 @@ export default function AlertasScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: theme.fundo },
-  content: { padding: theme.espacoGrande, paddingTop: 60 },
+  content: { padding: theme.espacoGrande},
   titulo: { fontSize: theme.fonteTitulo, fontWeight: 'bold', color: theme.texto, marginBottom: theme.espacoGrande },
   card: {
     backgroundColor: theme.branco, borderRadius: theme.borderRadius,

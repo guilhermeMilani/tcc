@@ -13,6 +13,7 @@ import {
   listarIdososDoCuidador, buscarMedicacoesHojeIdoso,
   cadastrarMedicacao, deletarMedicacao, atualizarMedicacao
 } from '../../api/api';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function MedicacoesCuidadorScreen() {
   const { usuario } = useAuth();
@@ -29,6 +30,7 @@ export default function MedicacoesCuidadorScreen() {
   const [horarios, setHorarios] = useState([]);
   const [mostrarTimePicker, setMostrarTimePicker] = useState(false);
   const [horarioTemp, setHorarioTemp] = useState(new Date());
+  const insets = useSafeAreaInsets();
 
   useFocusEffect(
     useCallback(() => {
@@ -238,7 +240,7 @@ export default function MedicacoesCuidadorScreen() {
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={[styles.content, { paddingTop: insets.top + 20 }]}>
         <View style={styles.cabecalho}>
           <Text style={styles.titulo}>Medicações</Text>
           <TouchableOpacity style={styles.botaoAdicionar} onPress={abrirModalCadastro}>
@@ -385,7 +387,7 @@ export default function MedicacoesCuidadorScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: theme.fundo },
-  content: { padding: theme.espacoGrande, paddingTop: 60 },
+  content: { padding: theme.espacoGrande},
   cabecalho: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
   titulo: { fontSize: theme.fonteTitulo, fontWeight: 'bold', color: theme.texto },
   subtitulo: { fontSize: theme.fontePequena, color: theme.textoSecundario, marginBottom: theme.espacoGrande, textTransform: 'capitalize' },

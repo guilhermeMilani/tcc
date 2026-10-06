@@ -93,4 +93,10 @@ export const deletarMedicacao = (medicacaoId) =>
 export const atualizarMedicacao = (medicacaoId, dados) =>
   api.put(`/medicacoes/${medicacaoId}`, dados);
 
+export const gerarCodigoVinculo = (idosoId) =>
+  api.post(`/vinculos/codigo/gerar?idosoId=${idosoId}`);
+
+export const vincularPorCodigo = (cuidadorId, codigo) =>
+  api.post(`/vinculos/codigo/vincular?cuidadorId=${cuidadorId}&codigo=${codigo}`);
+
 export default api;

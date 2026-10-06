@@ -1,0 +1,7 @@
+CREATE TABLE codigos_vinculo (
+    id BIGSERIAL PRIMARY KEY,
+    idoso_id BIGINT NOT NULL REFERENCES idosos(id),
+    codigo VARCHAR(6) NOT NULL UNIQUE,
+    expiracao TIMESTAMP NOT NULL,
+    usado BOOLEAN NOT NULL DEFAULT FALSE
+);

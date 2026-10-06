@@ -8,11 +8,13 @@ import { useFocusEffect } from '@react-navigation/native';
 import { theme } from '../../constants/theme';
 import { useAuth } from '../../context/AuthContext';
 import { buscarMedicacoesHoje, registrarAdesao } from '../../api/api';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function MedicacoesIdosoScreen() {
   const { usuario } = useAuth();
   const [medicacoes, setMedicacoes] = useState([]);
   const [carregando, setCarregando] = useState(true);
+  const insets = useSafeAreaInsets();
 
   useFocusEffect(
     useCallback(() => {
@@ -138,7 +140,7 @@ export default function MedicacoesIdosoScreen() {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+     <ScrollView style={styles.container} contentContainerStyle={[styles.content, { paddingTop: insets.top + 20 }]}>
       <Text style={styles.titulo}>Minhas Medicações</Text>
       <Text style={styles.subtitulo}>
         {new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
@@ -180,7 +182,7 @@ export default function MedicacoesIdosoScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: theme.fundo },
-  content: { padding: theme.espacoGrande, paddingTop: 60 },
+  content: { padding: theme.espacoGrande },
   centralizado: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   titulo: { fontSize: theme.fonteTitulo, fontWeight: 'bold', color: theme.texto, marginBottom: 4 },
   subtitulo: { fontSize: theme.fontePequena, color: theme.textoSecundario, marginBottom: theme.espacoGrande, textTransform: 'capitalize' },

@@ -8,6 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../../constants/theme';
 import { useAuth } from '../../context/AuthContext';
 import { listarIdososDoCuidador, buscarUltimaLocalizacao } from '../../api/api';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function LocalizacaoScreen() {
   const { usuario } = useAuth();
@@ -15,6 +16,8 @@ export default function LocalizacaoScreen() {
   const [idosoSelecionado, setIdosoSelecionado] = useState(null);
   const [localizacao, setLocalizacao] = useState(null);
   const [carregando, setCarregando] = useState(true);
+  const insets = useSafeAreaInsets();
+  
 
   useEffect(() => {
     carregarIdosos();
@@ -51,7 +54,7 @@ export default function LocalizacaoScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.cabecalho}>
+      <View style={[styles.cabecalho, { paddingTop: insets.top + 20 }]}>
         <Text style={styles.titulo}>Localização</Text>
 
         {idosos.length > 1 && (
@@ -110,7 +113,7 @@ export default function LocalizacaoScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: theme.fundo },
-  cabecalho: { padding: theme.espacoGrande, paddingTop: 60 },
+  cabecalho: { padding: theme.espacoGrande},
   titulo: { fontSize: theme.fonteTitulo, fontWeight: 'bold', color: theme.texto, marginBottom: theme.espacoMedio },
   chip: {
     borderRadius: 20, borderWidth: 1, borderColor: theme.primaria,

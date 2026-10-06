@@ -12,7 +12,9 @@ import {
 import { theme } from '../../constants/theme';
 import { useAuth } from '../../context/AuthContext';
 import { listarIdososDoCuidador, buscarHistoricoSinaisVitais } from '../../api/api';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+const insets = useSafeAreaInsets();
 const RANGES = [
   { label: '1h', value: '1h' },
   { label: '24h', value: '24h' },
@@ -200,7 +202,7 @@ const ultimo = sinais.length > 0
     .map(s => ({ x: new Date(s.dataHora).getTime(), y: s.temperatura }));
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+     <ScrollView style={styles.container} contentContainerStyle={[styles.content, { paddingTop: insets.top + 20 }]}>
       <Text style={styles.titulo}>Sinais Vitais</Text>
 
       {idosos.length > 1 && (
@@ -303,7 +305,7 @@ const ultimo = sinais.length > 0
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: theme.fundo },
-  content: { padding: theme.espacoGrande, paddingTop: 60 },
+  content: { padding: theme.espacoGrande},
   titulo: { fontSize: theme.fonteTitulo, fontWeight: 'bold', color: theme.texto, marginBottom: theme.espacoGrande },
   seletorIdoso: { marginBottom: theme.espacoMedio },
   chip: {

@@ -7,6 +7,7 @@ import SinaisVitaisScreen from '../screens/cuidador/SinaisVitaisScreen';
 import LocalizacaoScreen from '../screens/cuidador/LocalizacaoScreen';
 import AlertasScreen from '../screens/cuidador/AlertasScreen';
 import MedicacoesCuidadorScreen from '../screens/cuidador/MedicacoesCuidadorScreen';
+import VinculoCuidadorScreen from '../screens/cuidador/VinculoCuidadorScreen';
 import { theme } from '../constants/theme';
 
 const Tab = createBottomTabNavigator();
@@ -22,6 +23,7 @@ export default function CuidadorTabs() {
             Localização: 'location',
             Alertas: 'notifications',
             Medicações: 'medkit',
+            Vincular: 'person-add',
           };
           return <Ionicons name={icones[route.name]} size={size} color={color} />;
         },
@@ -37,6 +39,8 @@ export default function CuidadorTabs() {
       <Tab.Screen name="Localização" component={LocalizacaoScreen} />
       <Tab.Screen name="Alertas" component={AlertasScreen} />
       <Tab.Screen name="Medicações" component={MedicacoesCuidadorScreen} />
+      <Tab.Screen name="Vincular"  component={VinculoCuidadorScreen}
+/>
     </Tab.Navigator>
   );
 }

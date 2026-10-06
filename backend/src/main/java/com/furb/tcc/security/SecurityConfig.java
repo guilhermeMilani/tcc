@@ -36,6 +36,8 @@ public class SecurityConfig {
                         .requestMatchers("/vinculos/idoso/**").hasAnyRole("IDOSO", "CUIDADOR")
                         .requestMatchers("/vinculos/cuidador/**").hasRole("CUIDADOR")
                         .requestMatchers("/cuidadores/**").hasRole("CUIDADOR")
+                        .requestMatchers("/vinculos/codigo/gerar").hasRole("IDOSO")
+                        .requestMatchers("/vinculos/codigo/vincular").hasRole("CUIDADOR")
                         .anyRequest().authenticated()
                 )
                 .userDetailsService(userDetailsService)

@@ -9,12 +9,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../../constants/theme';
 import { useAuth } from '../../context/AuthContext';
 import { listarIdososDoCuidador, buscarAlertas } from '../../api/api';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function HomeCuidadorScreen() {
   const { usuario, logout } = useAuth();
   const [idosos, setIdosos] = useState([]);
   const [alertasNaoLidos, setAlertasNaoLidos] = useState(0);
   const [carregando, setCarregando] = useState(true);
+  const insets = useSafeAreaInsets();
 
   useFocusEffect(
     useCallback(() => {
@@ -48,7 +50,7 @@ export default function HomeCuidadorScreen() {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView style={styles.container} contentContainerStyle={[styles.content, { paddingTop: insets.top + 20 }]}>
       <View style={styles.cabecalho}>
         <View>
           <Text style={styles.ola}>Olá,</Text>
@@ -106,7 +108,6 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: theme.espacoGrande,
-    paddingTop: 60,
   },
   cabecalho: {
     flexDirection: 'row',

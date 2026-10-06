@@ -3,10 +3,16 @@ import { AuthProvider } from './src/context/AuthContext';
 import AppNavigator from './src/navigation/AppNavigator';
 import 'react-native-gesture-handler';
 
+import { StatusBar } from 'expo-status-bar';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+
 export default function App() {
   return (
-    <AuthProvider>
-      <AppNavigator />
-    </AuthProvider>
+    <SafeAreaProvider>
+      <AuthProvider>
+        <AppNavigator />
+        <StatusBar style="auto" />
+      </AuthProvider>
+    </SafeAreaProvider>
   );
 }
