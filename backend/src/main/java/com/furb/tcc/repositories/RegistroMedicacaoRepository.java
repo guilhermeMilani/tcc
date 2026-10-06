@@ -15,4 +15,5 @@ public interface RegistroMedicacaoRepository extends JpaRepository<RegistroMedic
             LocalDateTime inicio,
             LocalDateTime fim
     );
+    void deleteByMedicacaoId(Long medicacaoId);
 }

@@ -1,14 +1,17 @@
 import React, { useState, useCallback, useEffect } from 'react';
+import { KeyboardAvoidingView, Platform } from 'react-native';
 import {
   View, Text, StyleSheet, ScrollView, ActivityIndicator,
   TouchableOpacity, Alert, TextInput, Modal
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { useFocusEffect } from '@react-navigation/native';
 import { theme } from '../../constants/theme';
 import { useAuth } from '../../context/AuthContext';
 import {
-  listarIdososDoCuidador, buscarMedicacoesHojeIdoso, cadastrarMedicacao
+  listarIdososDoCuidador, buscarMedicacoesHojeIdoso,
+  cadastrarMedicacao, deletarMedicacao, atualizarMedicacao
 } from '../../api/api';
 
 export default function MedicacoesCuidadorScreen() {
@@ -18,7 +21,14 @@ export default function MedicacoesCuidadorScreen() {
   const [medicacoes, setMedicacoes] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [modalVisivel, setModalVisivel] = useState(false);
-  const [form, setForm] = useState({ nome: '', dosagem: '', horarios: '' });
+  const [modoEdicao, setModoEdicao] = useState(false);
+  const [medicacaoEditando, setMedicacaoEditando] = useState(null);
+  const [nome, setNome] = useState('');
+  const [dosagemValor, setDosagemValor] = useState('');
+  const [dosagemUnidade, setDosagemUnidade] = useState('mg');
+  const [horarios, setHorarios] = useState([]);
+  const [mostrarTimePicker, setMostrarTimePicker] = useState(false);
+  const [horarioTemp, setHorarioTemp] = useState(new Date());
 
   useFocusEffect(
     useCallback(() => {
@@ -42,40 +52,132 @@ export default function MedicacoesCuidadorScreen() {
     }
   }
 
-async function carregarMedicacoes() {
-  setCarregando(true);
-  try {
-    const resposta = await buscarMedicacoesHojeIdoso(idosoSelecionado.id);
-    setMedicacoes(resposta.data);
-  } catch (e) {
-    Alert.alert('Erro', 'Não foi possível carregar as medicações.');
-  } finally {
-    setCarregando(false);
+  async function carregarMedicacoes() {
+    setCarregando(true);
+    try {
+      const resposta = await buscarMedicacoesHojeIdoso(idosoSelecionado.id);
+      setMedicacoes(resposta.data);
+    } catch (e) {
+      Alert.alert('Erro', 'Não foi possível carregar as medicações.');
+    } finally {
+      setCarregando(false);
+    }
   }
-}
 
-  async function handleCadastrar() {
-    if (!form.nome) {
+  function abrirModalCadastro() {
+    limparForm();
+    setModoEdicao(false);
+    setMedicacaoEditando(null);
+    setModalVisivel(true);
+  }
+
+  function abrirModalEdicao(med) {
+    setModoEdicao(true);
+    setMedicacaoEditando(med);
+    setNome(med.nome || '');
+
+    // Separa valor e unidade da dosagem
+    const match = med.dosagem?.match(/^(\d+(?:\.\d+)?)(mg|g)$/);
+    if (match) {
+      setDosagemValor(match[1]);
+      setDosagemUnidade(match[2]);
+    } else {
+      setDosagemValor(med.dosagem || '');
+      setDosagemUnidade('mg');
+    }
+
+    // Pega todos os horários da medicação
+    const horariosUnicos = [...new Set(
+      medicacoes
+        .filter(m => m.id === med.id)
+        .map(m => m.horario?.substring(0, 5))
+        .filter(Boolean)
+    )];
+    setHorarios(horariosUnicos);
+    setModalVisivel(true);
+  }
+
+  function onChangeTimePicker(event, selectedDate) {
+    setMostrarTimePicker(Platform.OS === 'ios');
+    if (selectedDate) {
+      setHorarioTemp(selectedDate);
+      if (Platform.OS === 'android') {
+        adicionarHorario(selectedDate);
+      }
+    }
+  }
+
+  function adicionarHorario(date) {
+    const h = date.getHours().toString().padStart(2, '0');
+    const m = date.getMinutes().toString().padStart(2, '0');
+    const horario = `${h}:${m}`;
+    if (!horarios.includes(horario)) {
+      setHorarios(prev => [...prev, horario].sort());
+    }
+    setMostrarTimePicker(false);
+  }
+
+  function removerHorario(h) {
+    setHorarios(prev => prev.filter(x => x !== h));
+  }
+
+  function limparForm() {
+    setNome('');
+    setDosagemValor('');
+    setDosagemUnidade('mg');
+    setHorarios([]);
+  }
+
+  async function handleSalvar() {
+    if (!nome) {
       Alert.alert('Atenção', 'O nome da medicação é obrigatório.');
       return;
     }
     try {
-      const horarios = form.horarios
-        ? form.horarios.split(',').map(h => h.trim())
-        : [];
-      await cadastrarMedicacao({
+      const dosagem = dosagemValor ? `${dosagemValor}${dosagemUnidade}` : '';
+      const dados = {
         idosoId: idosoSelecionado.id,
-        nome: form.nome,
-        dosagem: form.dosagem,
+        nome,
+        dosagem,
         horarios,
-      });
+      };
+
+      if (modoEdicao && medicacaoEditando) {
+        await atualizarMedicacao(medicacaoEditando.id, dados);
+        Alert.alert('Sucesso', 'Medicação atualizada com sucesso.');
+      } else {
+        await cadastrarMedicacao(dados);
+        Alert.alert('Sucesso', 'Medicação cadastrada com sucesso.');
+      }
+
       setModalVisivel(false);
-      setForm({ nome: '', dosagem: '', horarios: '' });
+      limparForm();
       carregarMedicacoes();
-      Alert.alert('Sucesso', 'Medicação cadastrada com sucesso.');
     } catch (e) {
-      Alert.alert('Erro', 'Não foi possível cadastrar a medicação.');
+      Alert.alert('Erro', 'Não foi possível salvar a medicação.');
     }
+  }
+
+  async function handleDeletar(medicacaoId, nome) {
+    Alert.alert(
+      'Excluir Medicação',
+      `Deseja excluir "${nome}"? Esta ação não pode ser desfeita.`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Excluir',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deletarMedicacao(medicacaoId);
+              carregarMedicacoes();
+            } catch (e) {
+              Alert.alert('Erro', 'Não foi possível excluir a medicação.');
+            }
+          }
+        }
+      ]
+    );
   }
 
   function formatarHorario(horario) {
@@ -98,9 +200,17 @@ async function carregarMedicacoes() {
             <Text style={styles.nomeMed}>{med.nome}</Text>
             <Text style={styles.dosagem}>{med.dosagem}</Text>
           </View>
-          <View style={styles.horarioBadge}>
-            <Ionicons name="time-outline" size={14} color={theme.textoSecundario} />
-            <Text style={styles.horarioTexto}>{formatarHorario(med.horario)}</Text>
+          <View style={styles.cardAcoes}>
+            <View style={styles.horarioBadge}>
+              <Ionicons name="time-outline" size={14} color={theme.textoSecundario} />
+              <Text style={styles.horarioTexto}>{formatarHorario(med.horario)}</Text>
+            </View>
+            <TouchableOpacity onPress={() => abrirModalEdicao(med)} style={styles.botaoIcone}>
+              <Ionicons name="pencil-outline" size={18} color={theme.primaria} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => handleDeletar(med.id, med.nome)} style={styles.botaoIcone}>
+              <Ionicons name="trash-outline" size={18} color={theme.perigo} />
+            </TouchableOpacity>
           </View>
         </View>
         <View style={[styles.statusBadge, { backgroundColor: cor + '20' }]}>
@@ -131,10 +241,7 @@ async function carregarMedicacoes() {
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.cabecalho}>
           <Text style={styles.titulo}>Medicações</Text>
-          <TouchableOpacity
-            style={styles.botaoAdicionar}
-            onPress={() => setModalVisivel(true)}
-          >
+          <TouchableOpacity style={styles.botaoAdicionar} onPress={abrirModalCadastro}>
             <Ionicons name="add" size={28} color={theme.branco} />
           </TouchableOpacity>
         </View>
@@ -176,38 +283,101 @@ async function carregarMedicacoes() {
       </ScrollView>
 
       <Modal visible={modalVisivel} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modal}>
-            <Text style={styles.modalTitulo}>Nova Medicação</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Nome da medicação"
-              placeholderTextColor={theme.textoSecundario}
-              value={form.nome}
-              onChangeText={(v) => setForm(prev => ({ ...prev, nome: v }))}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Dosagem (ex: 50mg)"
-              placeholderTextColor={theme.textoSecundario}
-              value={form.dosagem}
-              onChangeText={(v) => setForm(prev => ({ ...prev, dosagem: v }))}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Horários separados por vírgula (ex: 08:00, 20:00)"
-              placeholderTextColor={theme.textoSecundario}
-              value={form.horarios}
-              onChangeText={(v) => setForm(prev => ({ ...prev, horarios: v }))}
-            />
-            <TouchableOpacity style={styles.botaoSalvar} onPress={handleCadastrar}>
-              <Text style={styles.botaoSalvarTexto}>Salvar</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.botaoCancelar} onPress={() => setModalVisivel(false)}>
-              <Text style={styles.botaoCancelarTexto}>Cancelar</Text>
-            </TouchableOpacity>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{ flex: 1 }}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modal}>
+              <Text style={styles.modalTitulo}>
+                {modoEdicao ? 'Editar Medicação' : 'Nova Medicação'}
+              </Text>
+
+              <TextInput
+                style={styles.input}
+                placeholder="Nome da medicação"
+                placeholderTextColor={theme.textoSecundario}
+                value={nome}
+                onChangeText={setNome}
+              />
+
+              <View style={styles.dosagemContainer}>
+                <TextInput
+                  style={[styles.input, styles.dosagemInput]}
+                  placeholder="Dosagem"
+                  placeholderTextColor={theme.textoSecundario}
+                  keyboardType="numeric"
+                  value={dosagemValor}
+                  onChangeText={setDosagemValor}
+                />
+                <View style={styles.unidadeContainer}>
+                  {['mg', 'g'].map(u => (
+                    <TouchableOpacity
+                      key={u}
+                      style={[styles.unidadeBotao, dosagemUnidade === u && styles.unidadeBotaoAtivo]}
+                      onPress={() => setDosagemUnidade(u)}
+                    >
+                      <Text style={[styles.unidadeTexto, dosagemUnidade === u && styles.unidadeTextoAtivo]}>
+                        {u}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+
+              <Text style={styles.labelHorarios}>Horários</Text>
+              <View style={styles.horariosLista}>
+                {horarios.map(h => (
+                  <View key={h} style={styles.horarioChip}>
+                    <Text style={styles.horarioChipTexto}>{h}</Text>
+                    <TouchableOpacity onPress={() => removerHorario(h)}>
+                      <Ionicons name="close" size={14} color={theme.branco} />
+                    </TouchableOpacity>
+                  </View>
+                ))}
+                <TouchableOpacity
+                  style={styles.botaoAdicionarHorario}
+                  onPress={() => setMostrarTimePicker(true)}
+                >
+                  <Ionicons name="add" size={20} color={theme.primaria} />
+                  <Text style={styles.botaoAdicionarHorarioTexto}>Adicionar horário</Text>
+                </TouchableOpacity>
+              </View>
+
+              {mostrarTimePicker && (
+                <DateTimePicker
+                  value={horarioTemp}
+                  mode="time"
+                  is24Hour={true}
+                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                  onChange={onChangeTimePicker}
+                />
+              )}
+
+              {Platform.OS === 'ios' && mostrarTimePicker && (
+                <TouchableOpacity
+                  style={styles.botaoConfirmarHorario}
+                  onPress={() => adicionarHorario(horarioTemp)}
+                >
+                  <Text style={styles.botaoSalvarTexto}>Confirmar horário</Text>
+                </TouchableOpacity>
+              )}
+
+              <TouchableOpacity style={styles.botaoSalvar} onPress={handleSalvar}>
+                <Text style={styles.botaoSalvarTexto}>
+                  {modoEdicao ? 'Atualizar' : 'Salvar'}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.botaoCancelar}
+                onPress={() => { setModalVisivel(false); limparForm(); }}
+              >
+                <Text style={styles.botaoCancelarTexto}>Cancelar</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
     </View>
   );
@@ -239,6 +409,7 @@ const styles = StyleSheet.create({
   },
   cardTopo: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 },
   cardInfo: { flex: 1 },
+  cardAcoes: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   nomeMed: { fontSize: theme.fonteMédia, fontWeight: 'bold', color: theme.texto },
   dosagem: { fontSize: theme.fontePequena, color: theme.textoSecundario, marginTop: 2 },
   horarioBadge: {
@@ -247,6 +418,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8, paddingVertical: 4,
   },
   horarioTexto: { fontSize: theme.fontePequena, color: theme.textoSecundario, fontWeight: 'bold' },
+  botaoIcone: { padding: 4 },
   statusBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
     borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6,
@@ -263,10 +435,39 @@ const styles = StyleSheet.create({
     color: theme.texto, marginBottom: theme.espacoMedio,
     borderWidth: 1, borderColor: '#DDD', height: theme.alturaBotao,
   },
+  dosagemContainer: { flexDirection: 'row', gap: theme.espacoMedio, marginBottom: theme.espacoMedio },
+  dosagemInput: { flex: 1, marginBottom: 0 },
+  unidadeContainer: { flexDirection: 'row', gap: 8, alignItems: 'center' },
+  unidadeBotao: {
+    borderWidth: 1, borderColor: theme.primaria, borderRadius: 8,
+    paddingHorizontal: 14, paddingVertical: 8,
+  },
+  unidadeBotaoAtivo: { backgroundColor: theme.primaria },
+  unidadeTexto: { fontSize: theme.fonteMédia, color: theme.primaria },
+  unidadeTextoAtivo: { color: theme.branco },
+  labelHorarios: { fontSize: theme.fontePequena, color: theme.textoSecundario, marginBottom: 8 },
+  horariosLista: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: theme.espacoMedio },
+  horarioChip: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    backgroundColor: theme.primaria, borderRadius: 16,
+    paddingHorizontal: 12, paddingVertical: 6,
+  },
+  horarioChipTexto: { color: theme.branco, fontSize: theme.fontePequena },
+  botaoAdicionarHorario: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    borderWidth: 1, borderColor: theme.primaria, borderRadius: 16,
+    paddingHorizontal: 12, paddingVertical: 6, borderStyle: 'dashed',
+  },
+  botaoAdicionarHorarioTexto: { color: theme.primaria, fontSize: theme.fontePequena },
+  botaoConfirmarHorario: {
+    backgroundColor: theme.primaria, borderRadius: theme.borderRadius,
+    height: 44, justifyContent: 'center', alignItems: 'center',
+    marginBottom: theme.espacoMedio,
+  },
   botaoSalvar: {
     backgroundColor: theme.primaria, borderRadius: theme.borderRadius,
     height: theme.alturaBotao, justifyContent: 'center', alignItems: 'center',
-    marginBottom: theme.espacoMedio,
+    marginBottom: theme.espacoMedio, marginTop: theme.espacoMedio,
   },
   botaoSalvarTexto: { color: theme.branco, fontSize: theme.fonteMédia, fontWeight: 'bold' },
   botaoCancelar: { alignItems: 'center', padding: theme.espacoMedio },

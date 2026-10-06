@@ -63,4 +63,23 @@ public class MedicacaoController {
     public ResponseEntity<List<MedicacaoHojeResponse>> buscarMedicacoesHoje(@PathVariable Long idosoId) {
         return ResponseEntity.ok(medicacaoService.buscarMedicacoesHoje(idosoId));
     }
+
+    @DeleteMapping("/{medicacaoId}")
+    public ResponseEntity<Void> deletar(@PathVariable Long medicacaoId) {
+        medicacaoService.deletar(medicacaoId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{medicacaoId}")
+    public ResponseEntity<Void> atualizar(
+            @PathVariable Long medicacaoId,
+            @RequestBody MedicacaoRequest request,
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+        Usuario usuario = usuarioRepository.findByEmail(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+        medicacaoService.atualizar(medicacaoId, request, usuario);
+        return ResponseEntity.ok().build();
+    }
 }

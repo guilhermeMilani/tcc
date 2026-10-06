@@ -116,4 +116,22 @@ public class MedicacaoService {
         resultado.sort(Comparator.comparing(MedicacaoHojeResponse::getHorario));
         return resultado;
     }
+
+    public void deletar(Long medicacaoId) {
+        Medicacao medicacao = medicacaoRepository.findById(medicacaoId)
+                .orElseThrow(() -> new RuntimeException("Medicação não encontrada"));
+        registroRepository.deleteByMedicacaoId(medicacao.getId());
+        medicacaoRepository.delete(medicacao);
+    }
+
+    public void atualizar(Long medicacaoId, MedicacaoRequest request, Usuario usuario) {
+        Medicacao medicacao = medicacaoRepository.findById(medicacaoId)
+                .orElseThrow(() -> new RuntimeException("Medicação não encontrada"));
+
+        medicacao.setNome(request.getNome());
+        medicacao.setDosagem(request.getDosagem());
+        medicacao.setHorarios(request.getHorarios());
+        medicacao.setCadastradoPor(usuario);
+        medicacaoRepository.save(medicacao);
+    }
 }

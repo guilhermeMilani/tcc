@@ -2,7 +2,7 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const api = axios.create({
-  baseURL: 'http://192.168.0.188:8080',
+  baseURL: 'https://tcc-production-389d.up.railway.app',
   timeout: 30000,
 });
 
@@ -86,5 +86,11 @@ export const buscarMedicacoesHojeIdoso = (idosoId) =>
 
 export const atualizarTokenNotificacao = (cuidadorId, token) =>
   api.put(`/cuidadores/${cuidadorId}/token`, { token });
+
+export const deletarMedicacao = (medicacaoId) =>
+  api.delete(`/medicacoes/${medicacaoId}`);
+
+export const atualizarMedicacao = (medicacaoId, dados) =>
+  api.put(`/medicacoes/${medicacaoId}`, dados);
 
 export default api;

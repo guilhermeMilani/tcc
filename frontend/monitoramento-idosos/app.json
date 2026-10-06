@@ -24,8 +24,13 @@
       },
       "edgeToEdgeEnabled": true,
       "package": "com.gpmilani.monitoramentoidosos",
+      "googleServicesFile": "./google-services.json",
       "usesCleartextTraffic": true,
-      "networkSecurityConfig": "./assets/network_security_config.xml"
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyAQc5lp9d0DGpFHeW9xIbsvOtFTLucSjDg"
+        }
+      }
     },
     "web": {
       "favicon": "./assets/favicon.png"

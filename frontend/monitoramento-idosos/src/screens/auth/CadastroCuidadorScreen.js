@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { KeyboardAvoidingView, Platform } from 'react-native';
 import {
   View, Text, TextInput, TouchableOpacity,
   StyleSheet, ActivityIndicator, Alert, ScrollView
@@ -36,48 +37,53 @@ export default function CadastroCuidadorScreen({ navigation }) {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.titulo}>Cadastro</Text>
-      <Text style={styles.subtitulo}>Crie sua conta de cuidador</Text>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <ScrollView contentContainerStyle={styles.container}>
+        <Text style={styles.titulo}>Cadastro</Text>
+        <Text style={styles.subtitulo}>Crie sua conta de cuidador</Text>
 
-      {[
-        { campo: 'nome', placeholder: 'Nome completo' },
-        { campo: 'email', placeholder: 'E-mail', keyboard: 'email-address' },
-        { campo: 'senha', placeholder: 'Senha', seguro: true },
-        { campo: 'telefone', placeholder: 'Telefone (opcional)', keyboard: 'phone-pad' },
-        { campo: 'relacaoComIdoso', placeholder: 'Relação com o idoso (ex: filho, enfermeiro)' },
-      ].map(({ campo, placeholder, keyboard, seguro }) => (
-        <TextInput
-          key={campo}
-          style={styles.input}
-          placeholder={placeholder}
-          placeholderTextColor={theme.textoSecundario}
-          keyboardType={keyboard || 'default'}
-          autoCapitalize={campo === 'email' ? 'none' : 'sentences'}
-          secureTextEntry={!!seguro}
-          value={form[campo]}
-          onChangeText={(v) => atualizar(campo, v)}
-        />
-      ))}
+        {[
+          { campo: 'nome', placeholder: 'Nome completo' },
+          { campo: 'email', placeholder: 'E-mail', keyboard: 'email-address' },
+          { campo: 'senha', placeholder: 'Senha', seguro: true },
+          { campo: 'telefone', placeholder: 'Telefone (opcional)', keyboard: 'phone-pad' },
+          { campo: 'relacaoComIdoso', placeholder: 'Relação com o idoso (ex: filho, enfermeiro)' },
+        ].map(({ campo, placeholder, keyboard, seguro }) => (
+          <TextInput
+            key={campo}
+            style={styles.input}
+            placeholder={placeholder}
+            placeholderTextColor={theme.textoSecundario}
+            keyboardType={keyboard || 'default'}
+            autoCapitalize={campo === 'email' ? 'none' : 'sentences'}
+            secureTextEntry={!!seguro}
+            value={form[campo]}
+            onChangeText={(v) => atualizar(campo, v)}
+          />
+        ))}
 
-      <TouchableOpacity
-        style={styles.botao}
-        onPress={handleCadastro}
-        disabled={carregando}
-      >
-        {carregando
-          ? <ActivityIndicator color={theme.branco} />
-          : <Text style={styles.botaoTexto}>Cadastrar</Text>
-        }
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.botao}
+          onPress={handleCadastro}
+          disabled={carregando}
+        >
+          {carregando
+            ? <ActivityIndicator color={theme.branco} />
+            : <Text style={styles.botaoTexto}>Cadastrar</Text>
+          }
+        </TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.voltar}
-        onPress={() => navigation.goBack()}
-      >
-        <Text style={styles.voltarTexto}>Voltar para o login</Text>
-      </TouchableOpacity>
-    </ScrollView>
+        <TouchableOpacity
+          style={styles.voltar}
+          onPress={() => navigation.goBack()}
+        >
+          <Text style={styles.voltarTexto}>Voltar para o login</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </KeyboardAvoidingView>    
   );
 }
 
