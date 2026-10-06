@@ -14,7 +14,7 @@ import { useAuth } from '../../context/AuthContext';
 import { listarIdososDoCuidador, buscarHistoricoSinaisVitais } from '../../api/api';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-const insets = useSafeAreaInsets();
+
 const RANGES = [
   { label: '1h', value: '1h' },
   { label: '24h', value: '24h' },
@@ -133,6 +133,7 @@ export default function SinaisVitaisScreen() {
   const [sinais, setSinais] = useState([]);
   const [range, setRange] = useState('1h');
   const [carregando, setCarregando] = useState(true);
+  const insets = useSafeAreaInsets();
 
   useFocusEffect(
     useCallback(() => {
