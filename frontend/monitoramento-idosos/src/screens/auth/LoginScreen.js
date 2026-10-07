@@ -26,7 +26,12 @@ async function handleLogin() {
     const resposta = await login(email, senha);
     await salvarLogin(resposta.data.token);
   } catch (e) {
-    Alert.alert('Erro', `${e.message} - ${e.code}`);
+    const status = e.response?.status;
+    if (status === 401 || status === 403) {
+      Alert.alert('Erro', 'E-mail ou senha incorretos.');
+    } else {
+      Alert.alert('Erro', 'Não foi possível conectar ao servidor.');
+    }
   } finally {
     setCarregando(false);
   }

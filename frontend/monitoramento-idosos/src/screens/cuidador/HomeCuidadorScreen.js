@@ -11,7 +11,8 @@ import { useAuth } from '../../context/AuthContext';
 import { listarIdososDoCuidador, buscarAlertas } from '../../api/api';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-export default function HomeCuidadorScreen() {
+
+export default function HomeCuidadorScreen({ navigation }) {
   const { usuario, logout } = useAuth();
   const [idosos, setIdosos] = useState([]);
   const [alertasNaoLidos, setAlertasNaoLidos] = useState(0);
@@ -62,12 +63,16 @@ export default function HomeCuidadorScreen() {
       </View>
 
       {alertasNaoLidos > 0 && (
-        <View style={styles.bannerAlerta}>
+        <TouchableOpacity
+          style={styles.bannerAlerta}
+          onPress={() => navigation.navigate('Alertas')}
+        >
           <Ionicons name="notifications" size={24} color={theme.branco} />
           <Text style={styles.bannerTexto}>
             {alertasNaoLidos} alerta{alertasNaoLidos > 1 ? 's' : ''} não lido{alertasNaoLidos > 1 ? 's' : ''}
           </Text>
-        </View>
+          <Ionicons name="chevron-forward" size={20} color={theme.branco} style={{ marginLeft: 'auto' }} />
+        </TouchableOpacity>
       )}
 
       <Text style={styles.secao}>Idosos monitorados</Text>

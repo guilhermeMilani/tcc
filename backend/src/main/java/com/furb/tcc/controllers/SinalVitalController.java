@@ -40,25 +40,29 @@ public class SinalVitalController {
         return ResponseEntity.ok(sinalVitalService.buscarHistorico(idosoId, range));
     }
 
-    @PostMapping("/popular-teste")
-    public ResponseEntity<Void> popularTeste(@AuthenticationPrincipal UserDetails userDetails) {
+    @PostMapping("/sinais-vitais/popular-teste")
+    public ResponseEntity<String> popularTeste(@AuthenticationPrincipal UserDetails userDetails) {
         Idoso idoso = idosoRepository.findByEmail(userDetails.getUsername())
                 .orElseThrow(() -> new RuntimeException("Idoso não encontrado"));
 
-        Random random = new Random();
-        Instant agora = Instant.now();
+        // Executa em background sem bloquear a requisição
+        new Thread(() -> {
+            Random random = new Random();
+            Instant agora = Instant.now();
 
-        for (int i = 10080; i >= 0; i--) {
-            SinalVital sinal = SinalVital.builder()
-                    .idosoId(String.valueOf(idoso.getId()))
-                    .frequenciaCardiaca(65 + random.nextInt(20))
-                    .spO2(95.0 + random.nextDouble() * 3)
-                    .temperatura(36.0 + random.nextDouble() * 1.5)
-                    .dataHora(agora.minusSeconds(i * 60))
-                    .build();
-            sinalVitalRepository.salvar(sinal);
-        }
+            for (int i = 168; i >= 0; i--) {
+                SinalVital sinal = SinalVital.builder()
+                        .idosoId(String.valueOf(idoso.getId()))
+                        .frequenciaCardiaca(65 + random.nextInt(20))
+                        .spO2(95.0 + random.nextDouble() * 3)
+                        .temperatura(36.0 + random.nextDouble() * 1.5)
+                        .dataHora(agora.minusSeconds(i * 3600))
+                        .build();
+                sinalVitalRepository.salvar(sinal);
+            }
+            System.out.println("Popular teste concluído!");
+        }).start();
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok("Populando em background... aguarde alguns minutos.");
     }
 }

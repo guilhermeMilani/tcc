@@ -222,19 +222,19 @@ const ultimo = sinais.length > 0
         </ScrollView>
       )}
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.seletorRange}>
-        {RANGES.map((r) => (
-          <TouchableOpacity
-            key={r.value}
-            style={[styles.botaoRange, range === r.value && styles.botaoRangeAtivo]}
-            onPress={() => setRange(r.value)}
-          >
-            <Text style={[styles.botaoRangeTexto, range === r.value && styles.botaoRangeTextoAtivo]}>
-              {r.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+      <View style={styles.seletorRange}>
+  {RANGES.map((r) => (
+    <TouchableOpacity
+      key={r.value}
+      style={[styles.botaoRange, range === r.value && styles.botaoRangeAtivo]}
+      onPress={() => setRange(r.value)}
+    >
+      <Text style={[styles.botaoRangeTexto, range === r.value && styles.botaoRangeTextoAtivo]}>
+        {r.label}
+      </Text>
+    </TouchableOpacity>
+  ))}
+</View>
 
       {carregando ? (
         <ActivityIndicator size="large" color={theme.primaria} style={{ marginTop: 40 }} />
@@ -316,15 +316,34 @@ const styles = StyleSheet.create({
   chipAtivo: { backgroundColor: theme.primaria },
   chipTexto: { fontSize: theme.fontePequena, color: theme.primaria },
   chipTextoAtivo: { color: theme.branco },
-  seletorRange: { marginBottom: theme.espacoGrande },
-  botaoRange: {
-    borderRadius: theme.borderRadius, borderWidth: 1,
-    borderColor: theme.primaria, paddingVertical: 8,
-    paddingHorizontal: 16, marginRight: 8, alignItems: 'center',
-  },
+  
+
+botaoRangeTexto: {
+  fontSize: theme.fonteMédia,
+  color: theme.primaria,
+  fontWeight: '500',
+},
+
+seletorRange: {
+  flexDirection: 'row',
+  marginBottom: theme.espacoGrande,
+  width: '100%',
+},
+botaoRange: {
+  flex: 1,
+  borderRadius: theme.borderRadius,
+  borderWidth: 1,
+  borderColor: theme.primaria,
+  paddingVertical: 12,
+  alignItems: 'center',
+  marginHorizontal: 4,
+},
+botaoRangeTextoAtivo: {
+  color: theme.branco,
+  fontWeight: '500',
+},
   botaoRangeAtivo: { backgroundColor: theme.primaria },
-  botaoRangeTexto: { fontSize: theme.fontePequena, color: theme.primaria },
-  botaoRangeTextoAtivo: { color: theme.branco },
+
   cardUltimo: {
     backgroundColor: theme.branco, borderRadius: theme.borderRadius,
     padding: theme.espacoGrande, marginBottom: theme.espacoMedio,
