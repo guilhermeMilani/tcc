@@ -39,8 +39,6 @@ function formatarTooltip(timestamp) {
 
 
 function GraficoSinal({ dados, cor, titulo, icone, unidade, range }) {
-  const [tooltipInfo, setTooltipInfo] = useState(null);
-
   if (!dados || dados.length === 0) return null;
 
   const maxPontos = range === '1h' ? 20 : range === '24h' ? 30 : 40;
@@ -49,6 +47,13 @@ function GraficoSinal({ dados, cor, titulo, icone, unidade, range }) {
     : dados;
 
   const larguraGrafico = Math.max(larguraTela, dadosFiltrados.length * 30);
+  const alturaGrafico = 200;
+  const paddingLeft = 65;
+
+  const minY = Math.min(...dadosFiltrados.map(d => d.y));
+  const maxY = Math.max(...dadosFiltrados.map(d => d.y));
+  const margem = (maxY - minY) * 0.15 || 1;
+  const domain = [minY - margem, maxY + margem * 2];
 
   const labels = dadosFiltrados.map((d, i) => {
     const total = dadosFiltrados.length;
@@ -61,67 +66,69 @@ function GraficoSinal({ dados, cor, titulo, icone, unidade, range }) {
       <View style={styles.graficoTituloRow}>
         <Ionicons name={icone} size={20} color={cor} />
         <Text style={styles.graficoTitulo}>{titulo}</Text>
-        {tooltipInfo && (
-          <View style={[styles.tooltipFixo, { borderColor: cor }]}>
-            <Text style={[styles.tooltipValor, { color: cor }]}>{tooltipInfo.valor}{unidade}</Text>
-            <Text style={styles.tooltipHora}>{tooltipInfo.hora}</Text>
-          </View>
-        )}
       </View>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        scrollEnabled={!tooltipInfo}
-      >
-        <VictoryChart
-          width={larguraGrafico}
-          height={200}
-          padding={{ top: 20, bottom: 40, left: 55, right: 25 }}
-          style={{ background: { fill: 'transparent' } }}
-          containerComponent={
-            <VictoryVoronoiContainer
-              voronoiDimension="x"
-              onActivated={(points) => {
-                if (points && points.length > 0 && points[0].y != null) {
-                  setTooltipInfo({
-                    valor: points[0].y,
-                    hora: formatarTooltip(points[0].x)
-                  });
-                }
+      <View style={{ flexDirection: 'row' }}>
+        <View style={{ width: paddingLeft }}>
+          <VictoryChart
+            width={paddingLeft + 10}
+            height={alturaGrafico}
+            padding={{ top: 20, bottom: 40, left: paddingLeft, right: 0 }}
+            style={{ background: { fill: 'transparent' } }}
+          >
+            <VictoryAxis
+              dependentAxis
+              domain={domain}
+              style={{
+                axis: { stroke: 'transparent' },
+                tickLabels: { fontSize: 9, fill: theme.textoSecundario },
+                grid: { stroke: 'transparent' },
               }}
-              onDeactivated={() => setTooltipInfo(null)}
             />
-          }
-        >
-          <VictoryAxis
-            tickValues={dadosFiltrados.map(d => d.x)}
-            tickFormat={(t) => labels[dadosFiltrados.findIndex(d => d.x === t)] || ''}
-            style={{
-              axis: { stroke: '#DDD' },
-              tickLabels: { fontSize: 9, fill: theme.textoSecundario, angle: -20 },
-              grid: { stroke: 'transparent' },
-            }}
-          />
-          <VictoryAxis
-            dependentAxis
-            style={{
-              axis: { stroke: '#DDD' },
-              tickLabels: { fontSize: 9, fill: theme.textoSecundario },
-              grid: { stroke: '#F0F0F0', strokeDasharray: '4' },
-            }}
-          />
-          <VictoryLine
-            data={dadosFiltrados}
-            style={{ data: { stroke: cor, strokeWidth: 2 } }}
-            interpolation="monotoneX"
-          />
-          <VictoryScatter
-            data={dadosFiltrados}
-            size={3}
-            style={{ data: { fill: cor } }}
-          />
-        </VictoryChart>
-      </ScrollView>
+            <VictoryLine
+              data={[]}
+              style={{ data: { stroke: 'transparent' } }}
+            />
+          </VictoryChart>
+        </View>
+
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flex: 1 }}>
+          <VictoryChart
+            width={larguraGrafico}
+            height={alturaGrafico}
+            padding={{ top: 20, bottom: 40, left: 0, right: 25 }}
+            style={{ background: { fill: 'transparent' } }}
+          >
+            <VictoryAxis
+              tickValues={dadosFiltrados.map(d => d.x)}
+              tickFormat={(t) => labels[dadosFiltrados.findIndex(d => d.x === t)] || ''}
+              style={{
+                axis: { stroke: '#DDD' },
+                tickLabels: { fontSize: 9, fill: theme.textoSecundario, angle: -20 },
+                grid: { stroke: 'transparent' },
+              }}
+            />
+            <VictoryAxis
+              dependentAxis
+              domain={domain}
+              style={{
+                axis: { stroke: 'transparent' },
+                tickLabels: { fill: 'transparent', fontSize: 0 },
+                grid: { stroke: '#F0F0F0', strokeDasharray: '4' },
+              }}
+            />
+            <VictoryLine
+              data={dadosFiltrados}
+              style={{ data: { stroke: cor, strokeWidth: 2 } }}
+              interpolation="monotoneX"
+            />
+            <VictoryScatter
+              data={dadosFiltrados}
+              size={3}
+              style={{ data: { fill: cor } }}
+            />
+          </VictoryChart>
+        </ScrollView>
+      </View>
     </View>
   );
 }
@@ -190,17 +197,17 @@ const ultimo = sinais.length > 0
   ? sinais.reduce((a, b) => new Date(a.dataHora) > new Date(b.dataHora) ? a : b)
   : null;
 
-  const freqData = sinais
-    .filter(s => s.frequenciaCardiaca != null)
-    .map(s => ({ x: new Date(s.dataHora).getTime(), y: s.frequenciaCardiaca }));
+const freqData = sinais
+  .filter(s => s.frequenciaCardiaca != null)
+  .map(s => ({ x: new Date(s.dataHora).getTime(), y: Math.round(s.frequenciaCardiaca) }));
 
-  const spo2Data = sinais
-    .filter(s => s.spO2 != null)
-    .map(s => ({ x: new Date(s.dataHora).getTime(), y: s.spO2 }));
+const spo2Data = sinais
+  .filter(s => s.spO2 != null)
+  .map(s => ({ x: new Date(s.dataHora).getTime(), y: Math.round(s.spO2 * 10) / 10 }));
 
-  const tempData = sinais
-    .filter(s => s.temperatura != null)
-    .map(s => ({ x: new Date(s.dataHora).getTime(), y: s.temperatura }));
+const tempData = sinais
+  .filter(s => s.temperatura != null)
+  .map(s => ({ x: new Date(s.dataHora).getTime(), y: Math.round(s.temperatura * 10) / 10 }));
 
   return (
      <ScrollView style={styles.container} contentContainerStyle={[styles.content, { paddingTop: insets.top + 20 }]}>
