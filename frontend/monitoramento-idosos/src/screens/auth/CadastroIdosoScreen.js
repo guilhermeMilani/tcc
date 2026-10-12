@@ -116,6 +116,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#DDD',
     height: theme.alturaBotao,
+    letterSpacing: 0,
   },
   botao: {
     backgroundColor: theme.primaria,

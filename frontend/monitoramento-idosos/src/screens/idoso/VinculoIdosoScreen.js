@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity,
-  Alert, ActivityIndicator
+  Alert, ActivityIndicator, Clipboard
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../../constants/theme';
@@ -14,6 +14,7 @@ export default function VinculoIdosoScreen() {
   const [codigo, setCodigo] = useState(null);
   const [carregando, setCarregando] = useState(false);
   const [expiracao, setExpiracao] = useState(null);
+  const [copiado, setCopiado] = useState(false);
   const insets = useSafeAreaInsets();
 
   async function handleGerarCodigo() {
@@ -21,6 +22,7 @@ export default function VinculoIdosoScreen() {
     try {
       const resposta = await gerarCodigoVinculo(usuario.id);
       setCodigo(resposta.data.codigo);
+      setCopiado(false);
       const exp = new Date(Date.now() + 10 * 60 * 1000);
       setExpiracao(exp);
     } catch (e) {
@@ -28,6 +30,12 @@ export default function VinculoIdosoScreen() {
     } finally {
       setCarregando(false);
     }
+  }
+
+  function handleCopiar() {
+    Clipboard.setString(codigo);
+    setCopiado(true);
+    setTimeout(() => setCopiado(false), 3000);
   }
 
   function formatarExpiracao() {
@@ -46,6 +54,18 @@ export default function VinculoIdosoScreen() {
         <View style={styles.codigoContainer}>
           <Text style={styles.codigoLabel}>Seu código</Text>
           <Text style={styles.codigo}>{codigo}</Text>
+
+          <TouchableOpacity style={styles.botaoCopiar} onPress={handleCopiar}>
+            <Ionicons
+              name={copiado ? 'checkmark-circle' : 'copy-outline'}
+              size={20}
+              color={copiado ? theme.sucesso : theme.primaria}
+            />
+            <Text style={[styles.botaoCopiarTexto, copiado && { color: theme.sucesso }]}>
+              {copiado ? 'Copiado!' : 'Copiar código'}
+            </Text>
+          </TouchableOpacity>
+
           <View style={styles.expiracaoRow}>
             <Ionicons name="time-outline" size={18} color={theme.textoSecundario} />
             <Text style={styles.expiracao}>Válido até {formatarExpiracao()}</Text>
@@ -105,6 +125,15 @@ const styles = StyleSheet.create({
   codigo: {
     fontSize: 52, fontWeight: 'bold', color: theme.primaria,
     letterSpacing: 8, marginBottom: theme.espacoMedio,
+  },
+  botaoCopiar: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    borderWidth: 1, borderColor: theme.primaria, borderRadius: theme.borderRadius,
+    paddingHorizontal: 16, paddingVertical: 8,
+    marginBottom: theme.espacoMedio,
+  },
+  botaoCopiarTexto: {
+    fontSize: theme.fontePequena, color: theme.primaria, fontWeight: '500',
   },
   expiracaoRow: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
