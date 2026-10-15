@@ -31,7 +31,7 @@ public class SmartWatchSimuladorService {
 
     private final Map<Long, double[]> localizacaoBase = new ConcurrentHashMap<>();
 
-    @Scheduled(fixedRate = 60000)
+    @Scheduled(fixedRate = 180000)
     public void simularSinaisVitais() {
         List<Idoso> idosos = idosoRepository.findAll();
 
@@ -47,7 +47,7 @@ public class SmartWatchSimuladorService {
         }
     }
 
-    @Scheduled(fixedRate = 15000)
+    @Scheduled(fixedRate = 180000)
     public void simularLocalizacao() {
         List<Idoso> idosos = idosoRepository.findAll();
 

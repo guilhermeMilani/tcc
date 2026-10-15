@@ -41,7 +41,7 @@ function formatarTooltip(timestamp) {
 function GraficoSinal({ dados, cor, titulo, icone, unidade, range }) {
   if (!dados || dados.length === 0) return null;
 
-  const maxPontos = range === '1h' ? 20 : range === '24h' ? 30 : 40;
+  const maxPontos = range === '1h' ? 20 : range === '24h' ? 48 : 56;
   const dadosFiltrados = dados.length > maxPontos
     ? dados.filter((_, i) => i % Math.ceil(dados.length / maxPontos) === 0)
     : dados;
