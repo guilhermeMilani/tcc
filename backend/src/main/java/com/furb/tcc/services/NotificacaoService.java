@@ -54,4 +54,32 @@ public class NotificacaoService {
             case PANICO -> "🚨 Emergência — Botão de Pânico";
         };
     }
+
+    public void enviarLembrete(String token, String nomeMed, String dosagem, String horario) {
+        if (token == null || token.isBlank()) return;
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("to", token);
+        body.put("title", "💊 Hora do medicamento!");
+        body.put("body", String.format("%s - %s às %s", nomeMed, dosagem, horario));
+        body.put("sound", "default");
+        body.put("priority", "high");
+        body.put("data", Map.of("tipo", "LEMBRETE_MEDICACAO"));
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("Accept", "application/json");
+
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
+
+        try {
+            restTemplate.postForEntity(
+                    "https://exp.host/--/api/v2/push/send",
+                    request,
+                    String.class
+            );
+        } catch (Exception e) {
+            System.err.println("Erro ao enviar lembrete: " + e.getMessage());
+        }
+    }
 }

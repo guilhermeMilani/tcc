@@ -99,4 +99,7 @@ export const gerarCodigoVinculo = (idosoId) =>
 export const vincularPorCodigo = (cuidadorId, codigo) =>
   api.post(`/vinculos/codigo/vincular?cuidadorId=${cuidadorId}&codigo=${codigo}`);
 
+export const atualizarTokenIdoso = (idosoId, token) =>
+  api.put(`/idosos/${idosoId}/token`, { token });
+
 export default api;

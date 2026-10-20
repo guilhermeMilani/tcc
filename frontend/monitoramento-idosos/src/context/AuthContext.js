@@ -32,9 +32,7 @@ async function salvarLogin(token) {
   const decoded = jwtDecode(token);
   setUsuario({ token, ...decoded });
 
-  if (decoded.tipo === 'CUIDADOR') {
-    await configurarNotificacoes(decoded.id);
-  }
+  await configurarNotificacoes(decoded.id, decoded.tipo);
 }
 
   async function logout() {

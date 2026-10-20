@@ -40,4 +40,7 @@ public class Idoso extends Usuario {
     @ManyToMany(mappedBy = "idosos")
     @JsonIgnore
     private List<Cuidador> cuidadores = new ArrayList<>();
+
+    @Column(name = "token_notificacao")
+    private String tokenNotificacao;
 }

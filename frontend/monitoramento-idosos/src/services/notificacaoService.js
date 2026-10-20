@@ -12,11 +12,41 @@ Notifications.setNotificationHandler({
   }),
 });
 
-export async function configurarNotificacoes(cuidadorId) {
-  if (!Device.isDevice) {
-    console.log('Notificações só funcionam em dispositivo físico');
-    return;
+export async function configurarNotificacoes(usuarioId, tipo) {
+  if (!Device.isDevice) return;
+
+  const { status: existingStatus } = await Notifications.getPermissionsAsync();
+  let finalStatus = existingStatus;
+
+  if (existingStatus !== 'granted') {
+    const { status } = await Notifications.requestPermissionsAsync();
+    finalStatus = status;
   }
+
+  if (finalStatus !== 'granted') return;
+
+  if (Platform.OS === 'android') {
+    await Notifications.setNotificationChannelAsync('alertas-criticos', {
+      name: 'Alertas Críticos',
+      importance: Notifications.AndroidImportance.MAX,
+      vibrationPattern: [0, 250, 250, 250],
+      lightColor: '#FF0000',
+      sound: 'default',
+      bypassDnd: true,
+    });
+  }
+
+  const token = (await Notifications.getExpoPushTokenAsync()).data;
+  console.log('Token notificacao:', token);
+
+  if (tipo === 'CUIDADOR') {
+    await atualizarTokenNotificacao(usuarioId, token);
+  } else if (tipo === 'IDOSO') {
+    await atualizarTokenIdoso(usuarioId, token);
+  }
+
+  return token;
+}
 
   // Solicita permissão
   const { status: existingStatus } = await Notifications.getPermissionsAsync();

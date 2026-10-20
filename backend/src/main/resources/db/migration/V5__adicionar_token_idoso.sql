@@ -1,0 +1,1 @@
+ALTER TABLE idosos ADD COLUMN token_notificacao VARCHAR(500);
