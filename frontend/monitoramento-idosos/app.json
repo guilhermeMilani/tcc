@@ -6,12 +6,6 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
-    "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.gpmilani.monitoramentoidosos",
@@ -22,10 +16,8 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true,
       "package": "com.gpmilani.monitoramentoidosos",
       "googleServicesFile": "./google-services.json",
-      "usesCleartextTraffic": true,
       "config": {
         "googleMaps": {
           "apiKey": "AIzaSyAQc5lp9d0DGpFHeW9xIbsvOtFTLucSjDg"
@@ -43,6 +35,16 @@
           "icon": "./assets/icon.png",
           "color": "#2E75B6",
           "sounds": []
+        }
+      ],
+      "expo-font",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "enableMinifyInReleaseBuilds": false,
+            "enableShrinkResourcesInReleaseBuilds": false
+          }
         }
       ]
     ],
