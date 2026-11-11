@@ -8,8 +8,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Service
@@ -21,28 +23,36 @@ public class LembreteMedicacaoService {
     private final IdosoRepository idosoRepository;
     private final NotificacaoService notificacaoService;
 
-    @Scheduled(fixedRate = 60000) // a cada 1 minuto
+    @Transactional(readOnly = true)
+    @Scheduled(fixedRate = 60000)
     public void verificarLembretes() {
+        LocalTime agora = LocalTime.now();
         List<Idoso> idosos = idosoRepository.findAll();
+        log.info("Lembretes: verificando {} idosos às {}", idosos.size(), agora);
 
         for (Idoso idoso : idosos) {
-            if (idoso.getTokenNotificacao() == null || idoso.getTokenNotificacao().isBlank()) continue;
+            String token = idoso.getTokenNotificacao();
+            if (token == null || token.isBlank()) {
+                log.info("Lembretes: idoso {} sem token de notificação", idoso.getId());
+                continue;
+            }
 
             List<Medicacao> medicacoes = medicacaoRepository.findByIdosoId(idoso.getId());
-            LocalTime agora = LocalTime.now();
 
             for (Medicacao med : medicacoes) {
                 if (med.getHorarios() == null) continue;
 
                 for (LocalTime horario : med.getHorarios()) {
-                    long minutosAte = agora.until(horario, java.time.temporal.ChronoUnit.MINUTES);
+                    long minutosAte = agora.until(horario, ChronoUnit.MINUTES);
+                    log.info("Lembretes: idoso {} - {} às {} (faltam {} min)",
+                            idoso.getId(), med.getNome(), horario, minutosAte);
 
                     if (minutosAte >= 4 && minutosAte <= 5) {
                         log.info("Enviando lembrete para idoso {} - medicação {} às {}",
                                 idoso.getId(), med.getNome(), horario);
 
                         notificacaoService.enviarLembrete(
-                                idoso.getTokenNotificacao(),
+                                token,
                                 med.getNome(),
                                 med.getDosagem(),
                                 horario.toString().substring(0, 5)
