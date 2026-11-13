@@ -11,4 +11,5 @@ import java.util.Optional;
 public interface IdosoRepository extends JpaRepository<Idoso, Long> {
     Optional<Idoso> findByEmail(String email);
     List<Idoso> findByCuidadoresId(Long cuidadorId);
+    List<Idoso> findByTokenNotificacao(String tokenNotificacao);
 }

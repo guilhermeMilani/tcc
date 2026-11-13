@@ -10,4 +10,5 @@ import java.util.Optional;
 public interface CuidadorRepository extends JpaRepository<Cuidador, Long> {
     Optional<Cuidador> findByEmail(String email);
     List<Cuidador> findByIdososId(Long idosoId);
+    List<Cuidador> findByTokenNotificacao(String tokenNotificacao);
 }

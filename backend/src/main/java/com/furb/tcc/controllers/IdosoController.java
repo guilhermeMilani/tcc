@@ -1,7 +1,6 @@
 package com.furb.tcc.controllers;
 
-import com.furb.tcc.entities.Idoso;
-import com.furb.tcc.repositories.IdosoRepository;
+import com.furb.tcc.services.TokenNotificacaoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,18 +12,13 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class IdosoController {
 
-    private final IdosoRepository idosoRepository;
+    private final TokenNotificacaoService tokenService;
 
     @PutMapping("/{id}/token")
     public ResponseEntity<Void> atualizarToken(
             @PathVariable Long id,
             @RequestBody Map<String, String> body) {
-
-        Idoso idoso = idosoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Idoso não encontrado"));
-
-        idoso.setTokenNotificacao(body.get("token"));
-        idosoRepository.save(idoso);
+        tokenService.registrarParaIdoso(id, body.get("token"));
         return ResponseEntity.ok().build();
     }
 }

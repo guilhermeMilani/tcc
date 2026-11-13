@@ -1,7 +1,6 @@
 package com.furb.tcc.controllers;
 
-import com.furb.tcc.entities.Cuidador;
-import com.furb.tcc.repositories.CuidadorRepository;
+import com.furb.tcc.services.TokenNotificacaoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,18 +12,13 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class CuidadorController {
 
-    private final CuidadorRepository cuidadorRepository;
+    private final TokenNotificacaoService tokenService;
 
     @PutMapping("/{id}/token")
     public ResponseEntity<Void> atualizarToken(
             @PathVariable Long id,
             @RequestBody Map<String, String> body) {
-
-        Cuidador cuidador = cuidadorRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Cuidador não encontrado"));
-
-        cuidador.setTokenNotificacao(body.get("token"));
-        cuidadorRepository.save(cuidador);
+        tokenService.registrarParaCuidador(id, body.get("token"));
         return ResponseEntity.ok().build();
     }
 }
