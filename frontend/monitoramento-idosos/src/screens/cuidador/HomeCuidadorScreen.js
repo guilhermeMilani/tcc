@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
-import { useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView,
   ActivityIndicator, TouchableOpacity, Alert
@@ -8,7 +7,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../../constants/theme';
 import { useAuth } from '../../context/AuthContext';
-import { listarIdososDoCuidador, buscarAlertas } from '../../api/api';
+import { listarIdososDoCuidador, contarAlertasNaoLidos } from '../../api/api';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 
@@ -30,12 +29,8 @@ export default function HomeCuidadorScreen({ navigation }) {
       const resposta = await listarIdososDoCuidador(usuario.id);
       setIdosos(resposta.data);
 
-      let total = 0;
-      for (const idoso of resposta.data) {
-        const alertas = await buscarAlertas(idoso.id);
-        total += alertas.data.filter(a => !a.lido).length;
-      }
-      setAlertasNaoLidos(total);
+      const { data } = await contarAlertasNaoLidos(usuario.id);
+      setAlertasNaoLidos(data.total);
     } catch (e) {
       Alert.alert('Erro', 'Não foi possível carregar os dados.');
     } finally {
@@ -55,7 +50,7 @@ export default function HomeCuidadorScreen({ navigation }) {
       <View style={styles.cabecalho}>
         <View>
           <Text style={styles.ola}>Olá,</Text>
-          <Text style={styles.nome}>{usuario?.sub?.split('@')[0]}</Text>
+          <Text style={styles.nome}>{usuario?.nome?.split(' ')[0] || usuario?.sub?.split('@')[0]}</Text>
         </View>
         <TouchableOpacity onPress={handleLogout}>
           <Ionicons name="log-out-outline" size={32} color={theme.primaria} />

@@ -17,7 +17,7 @@ export default function HomeIdosoScreen() {
 
   useEffect(() => {
     carregarSinais();
-    const intervalo = setInterval(carregarSinais, 10000); // atualiza a cada 10s
+    const intervalo = setInterval(carregarSinais, 60000); // dado novo só a cada 3 min
     return () => clearInterval(intervalo);
   }, []);
 
@@ -47,7 +47,7 @@ export default function HomeIdosoScreen() {
       <View style={styles.cabecalho}>
         <View>
           <Text style={styles.olá}>Olá,</Text>
-          <Text style={styles.nome}>{usuario?.sub?.split('@')[0]}</Text>
+          <Text style={styles.nome}>{usuario?.nome?.split(' ')[0] || usuario?.sub?.split('@')[0]}</Text>
         </View>
         <TouchableOpacity onPress={handleLogout}>
           <Ionicons name="log-out-outline" size={32} color={theme.primaria} />
@@ -89,7 +89,7 @@ export default function HomeIdosoScreen() {
       <View style={styles.infoBox}>
         <Ionicons name="information-circle-outline" size={24} color={theme.primaria} />
         <Text style={styles.infoTexto}>
-          Os dados são atualizados automaticamente a cada 1 minuto.
+          Os dados são atualizados automaticamente a cada 3 minutos.
         </Text>
       </View>
     </ScrollView>

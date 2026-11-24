@@ -1,6 +1,7 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import HomeIdosoScreen from '../screens/idoso/HomeIdosoScreen';
 import MedicacoesIdosoScreen from '../screens/idoso/MedicacoesIdosoScreen';
@@ -11,6 +12,8 @@ import { theme } from '../constants/theme';
 const Tab = createBottomTabNavigator();
 
 export default function IdosoTabs() {
+  const insets = useSafeAreaInsets();
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -26,14 +29,18 @@ export default function IdosoTabs() {
         tabBarActiveTintColor: theme.primaria,
         tabBarInactiveTintColor: theme.textoSecundario,
         tabBarLabelStyle: { fontSize: 14 },
-        tabBarStyle: { height: 70, paddingBottom: 10 },
+        tabBarStyle: {
+          height: 60 + insets.bottom,
+          paddingBottom: insets.bottom + 6,
+          paddingTop: 6,
+        },
         headerShown: false,
       })}
     >
       <Tab.Screen name="Início" component={HomeIdosoScreen} />
       <Tab.Screen name="Medicações" component={MedicacoesIdosoScreen} />
       <Tab.Screen name="Emergência" component={PanicoScreen} />
-      <Tab.Screen name="Vincular"  component={VinculoIdosoScreen}/>
+      <Tab.Screen name="Vincular" component={VinculoIdosoScreen} />
     </Tab.Navigator>
   );
 }

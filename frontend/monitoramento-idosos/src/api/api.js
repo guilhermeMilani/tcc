@@ -102,4 +102,13 @@ export const vincularPorCodigo = (cuidadorId, codigo) =>
 export const atualizarTokenIdoso = (idosoId, token) =>
   api.put(`/idosos/${idosoId}/token`, { token });
 
+export const buscarAlertasCuidador = (cuidadorId, page = 0, size = 15) =>
+  api.get(`/alertas/cuidador/${cuidadorId}?page=${page}&size=${size}`);
+
+export const contarAlertasNaoLidos = (cuidadorId) =>
+  api.get(`/alertas/cuidador/${cuidadorId}/nao-lidos`);
+
+export const marcarTodosAlertasComoLidos = (cuidadorId) =>
+  api.patch(`/alertas/cuidador/${cuidadorId}/lidos`);
+
 export default api;

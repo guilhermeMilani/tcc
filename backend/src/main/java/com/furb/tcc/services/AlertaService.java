@@ -4,7 +4,10 @@ import com.furb.tcc.entities.*;
 import com.furb.tcc.repositories.AlertaRepository;
 import com.furb.tcc.repositories.CuidadorRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -45,6 +48,20 @@ public class AlertaService {
 
     public List<Alerta> listarPorIdoso(Long idosoId) {
         return alertaRepository.findByIdosoIdOrderByDataHoraDesc(idosoId);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<Alerta> listarPorCuidador(Long cuidadorId, Pageable pageable) {
+        return alertaRepository.findByIdosoCuidadoresIdOrderByDataHoraDesc(cuidadorId, pageable);
+    }
+
+    public long contarNaoLidos(Long cuidadorId) {
+        return alertaRepository.countByLidoFalseAndIdosoCuidadoresId(cuidadorId);
+    }
+
+    @Transactional
+    public void marcarTodosComoLidos(Long cuidadorId) {
+        alertaRepository.marcarTodosComoLidosDoCuidador(cuidadorId);
     }
 
     public void marcarComoLido(Long alertaId) {

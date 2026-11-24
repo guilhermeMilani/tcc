@@ -1,6 +1,7 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import HomeCuidadorScreen from '../screens/cuidador/HomeCuidadorScreen';
 import SinaisVitaisScreen from '../screens/cuidador/SinaisVitaisScreen';
@@ -13,6 +14,8 @@ import { theme } from '../constants/theme';
 const Tab = createBottomTabNavigator();
 
 export default function CuidadorTabs() {
+  const insets = useSafeAreaInsets();
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -30,7 +33,11 @@ export default function CuidadorTabs() {
         tabBarActiveTintColor: theme.primaria,
         tabBarInactiveTintColor: theme.textoSecundario,
         tabBarLabelStyle: { fontSize: 13 },
-        tabBarStyle: { height: 70, paddingBottom: 10 },
+        tabBarStyle: {
+          height: 60 + insets.bottom,
+          paddingBottom: insets.bottom + 6,
+          paddingTop: 6,
+        },
         headerShown: false,
       })}
     >
@@ -39,8 +46,7 @@ export default function CuidadorTabs() {
       <Tab.Screen name="Localização" component={LocalizacaoScreen} />
       <Tab.Screen name="Alertas" component={AlertasScreen} />
       <Tab.Screen name="Medicações" component={MedicacoesCuidadorScreen} />
-      <Tab.Screen name="Vincular"  component={VinculoCuidadorScreen}
-/>
+      <Tab.Screen name="Vincular" component={VinculoCuidadorScreen} />
     </Tab.Navigator>
   );
 }
